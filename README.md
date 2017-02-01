@@ -30,7 +30,7 @@ Non-cacheable content blocks will not cause a full miss on the page. These conte
 
 ## How to install
 
-The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded via [Composer](https://getcomposer.org), the PHP package manager. Dependency definition happens in the [composer.json](/blob/master/composer.json) file:
+The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded via [Composer](https://getcomposer.org), the PHP package manager. Dependency definition happens in the [composer.json](/composer.json) file:
 
 ```json
 {
@@ -43,22 +43,22 @@ The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded 
 }
 ```
 
-Run `composer install` to install these dependencies. They will be stored in the *vendor* folder. They are bootstrapped in [index.php](../blob/master/public/index.php) via `require_once __DIR__ . '/../vendor/autoload.php';
+Run `composer install` to install these dependencies. They will be stored in the *vendor* folder. They are bootstrapped in [index.php](/public/index.php) via `require_once __DIR__ . '/../vendor/autoload.php';
 `
 
-If you use *Apache* as your webserver, there's an [.htaccess](../blob/master/public/.htaccess) file that routes all traffic for non-existent files and directories to [index.php](../blob/master/public/index.php).
+If you use *Apache* as your webserver, there's an [.htaccess](/public/.htaccess) file that routes all traffic for non-existent files and directories to [index.php](/public/index.php).
 
 ## Key components
 
-The [index.php](../blob/master/public/index.php) file is the controller of the application. It reads HTTP input and generates HTTP output.
+The [index.php](/public/index.php) file is the controller of the application. It reads HTTP input and generates HTTP output.
 Routes are matched via `$app->get()` callbacks.
 
-Output is formatted using the [Twig](http://twig.sensiolabs.org) templating language. The [views](../blob/master/views) folder contains the template file for each route:
+Output is formatted using the [Twig](http://twig.sensiolabs.org) templating language. The [views](/views) folder contains the template file for each route:
 
-* [footer.twig](../blob/master/views/footer.twig) contains the footer template which returns a translated string and a timestamp
-* [header.twig](../blob/master/views/header.twig) contains the header template which also returns a translated string and a timestamp
-* [index.twig](../blob/master/views/index.twig) contains the main template where the header, footer, and navigation are loaded, either via *ESI* or via *HInclude*
-* [nav.twig](../blob/master/views/nav.twig) contains the navigation template
+* [footer.twig](/views/footer.twig) contains the footer template which returns a translated string and a timestamp
+* [header.twig](/views/header.twig) contains the header template which also returns a translated string and a timestamp
+* [index.twig](/views/index.twig) contains the main template where the header, footer, and navigation are loaded, either via *ESI* or via *HInclude*
+* [nav.twig](/views/nav.twig) contains the navigation template
 
 ## Varnish
 
