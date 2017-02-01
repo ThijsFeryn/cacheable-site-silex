@@ -30,7 +30,7 @@ Non-cacheable content blocks will not cause a full miss on the page. These conte
 
 ## How to install
 
-The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded via [Composer](https://getcomposer.org), the PHP package manager. Dependency definition happens in the [composer.json](../blob/master/composer.json) file:
+The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded via [Composer](https://getcomposer.org), the PHP package manager. Dependency definition happens in the [composer.json](/blob/master/composer.json) file:
 
 ```json
 {
