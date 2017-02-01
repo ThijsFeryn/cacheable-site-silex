@@ -48,6 +48,8 @@ Run `composer install` to install these dependencies. They will be stored in the
 
 If you use *Apache* as your webserver, there's an [.htaccess](/public/.htaccess) file that routes all traffic for non-existent files and directories to [index.php](/public/index.php).
 
+Please make sure that your webserver's *document root* points to the [public](/public) folder where the [index.php](/public/index.php) file is located.
+
 ## Key components
 
 The [index.php](/public/index.php) file is the controller of the application. It reads HTTP input and generates HTTP output.
