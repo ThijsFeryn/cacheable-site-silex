@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" xmlns:hx="http://purl.org/NET/hinclude">
+<head>
+    <title>Varnishtraining example 13.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="//rawgit.com/mnot/hinclude/master/hinclude.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    {{ render_hinclude(url('header')) }}
+    <div class="row">
+        <div class="col-sm-3 col-lg-2">
+            {{ render_esi(url('nav')) }}
+        </div>
+        <div class="col-sm-9 col-lg-10">
+            <div class="page-header">
+                <h1>{{ 'example' | trans }} <small>{{ 'rendered' | trans({'%date%':"now"|date("Y-m-d H:i:s")}) }}</small></h1>
+            </div>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris consequat orci eget libero sollicitudin, non ultrices turpis mollis. Aliquam sit amet tempus elit. Ut viverra risus enim, ut venenatis justo accumsan nec. Praesent a dolor tellus. Maecenas non mauris leo. Pellentesque lobortis turpis at dapibus laoreet. Mauris rhoncus nulla et urna mollis, et lobortis magna ornare. Etiam et sapien consequat, egestas felis sit amet, dignissim enim.</p>
+            <p>Quisque quis mollis justo, imperdiet fermentum velit. Aliquam nulla justo, consectetur et diam non, luctus commodo metus. Vestibulum fermentum efficitur nulla non luctus. Nunc lorem nunc, mollis id efficitur et, aliquet sit amet ante. Sed ipsum turpis, vehicula eu semper eu, malesuada eget leo. Vestibulum venenatis dui id pulvinar suscipit. Etiam nec massa pharetra justo pharetra dignissim quis non magna. Integer id convallis lectus. Nam non ullamcorper metus. Ut vestibulum ex ut massa posuere tincidunt. Vestibulum hendrerit neque id lorem rhoncus aliquam. Duis a facilisis metus, a faucibus nulla.</p>
+        </div>
+    </div>
+    {{ render_esi(url('footer')) }}
+</div>
+</body>
+</html>
