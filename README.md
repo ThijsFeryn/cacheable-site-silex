@@ -103,6 +103,7 @@ It serves as a set of best practices that should encourage developers to control
 More information about me:
 
 * Visit my website: https://feryn.eu
+* Learn more about my book: https://book.feryn.eu
 * Follow me on Twitter: [@ThijsFeryn](https://twitter.com/ThijsFeryn)
 * Follow me on Instagram: [@ThijsFeryn](https://instagram.com/ThijsFeryn)
 * View my LinkedIn profile: http://linkedin.com/in/thijsferyn
