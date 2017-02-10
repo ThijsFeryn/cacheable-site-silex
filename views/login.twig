@@ -1,0 +1,26 @@
+{% extends "base.twig" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>{{ 'log_in' | trans }}</h1>
+    </div>
+    <form class="form-horizontal" method="post" action="{{ url('loginpost') }}">
+        <div class="form-group">
+            <label for="usernameInput" class="col-sm-2 control-label">{{ 'username' | trans }}</label>
+            <div class="col-sm-6">
+                <input type="text" name="username" class="form-control" id="usernameInput" placeholder="{{ 'username' | trans }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="passwordInput" class="col-sm-2 control-label">{{ 'password' | trans }}</label>
+            <div class="col-sm-6">
+                <input type="password" name="password" class="form-control" id="passwordInput" placeholder="{{ 'password' | trans }}">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default">{{ 'log_in' | trans }}</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

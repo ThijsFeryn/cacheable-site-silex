@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html" xmlns:hx="http://purl.org/NET/hinclude">
+<head>
+    <title>{% block title %}{% endblock %} - Developing cacheable websites</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="//rawgit.com/mnot/hinclude/master/hinclude.js"></script>
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+    <script src="//rawgit.com/carhartl/jquery-cookie/master/src/jquery.cookie.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    {{ render_esi(url('header')) }}
+    <div class="row">
+        <div class="col-sm-3 col-lg-2">
+            {{ render_esi(url('nav')) }}
+        </div>
+        <div class="col-sm-9 col-lg-10">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    {{ render_hinclude(url('footer')) }}
+</div>
+<script language="JavaScript">
+    function getCookie(name) {
+        var value = "; " + document.cookie;
+        var parts = value.split("; " + name + "=");
+        if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+    function parseJwt (token) {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace('-', '+').replace('_', '/');
+        return JSON.parse(window.atob(base64));
+    };
+    $(document).ready(function(){
+        var token = parseJwt($.cookie("token"));
+        $("#usernameLabel").html(', ' + token.sub);
+    });
+</script>
+</body>
+</html>
