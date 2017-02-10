@@ -10,7 +10,11 @@ backend default {
 
 sub vcl_recv {
     set req.url = std.querysort(req.url);
-    call lang;
+    if(req.http.accept-language ~ "^\s*(nl)") {
+        set req.http.accept-language = regsub(req.http.accept-language,"^\s*(nl).*$","\1");
+    } else {
+        set req.http.accept-language = "en";
+    }
     set req.http.Surrogate-Capability="key=ESI/1.0";
     if ((req.method != "GET" && req.method != "HEAD") || req.http.Authorization) {
         return (pass);
@@ -85,16 +89,5 @@ sub jwt {
         unset req.http.tmpRequestSig;
         unset req.http.tmpCorrectSig;
         unset req.http.tmpPayload;
-
-        std.log("X-Login: " + req.http.X-Login);
     }
-}
-
-sub lang {
-    if(req.http.accept-language ~ "^\s*(nl)") {
-        set req.http.accept-language = regsub(req.http.accept-language,"^\s*(nl).*$","\1");
-    } else {
-        set req.http.accept-language = "en";
-    }
-    std.log("Accept-Language: " + req.http.accept-language);
 }
