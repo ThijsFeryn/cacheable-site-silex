@@ -177,7 +177,7 @@ $app->post('/login', function (Request $request) use($app) {
     return $response;
 })->bind('loginpost');
 
-$app->get('/private', function (Request $request) use($app) {
+$app->get('/private', function () use($app) {
     $response =  new Response($app['twig']->render('private.twig'),200);
     $response
         ->setSharedMaxAge(500)
