@@ -93,7 +93,7 @@ sub vcl_backend_response {
 }
 ```
 
-**This piece of *VCL* code assumes that Varnis is installed on port 80 and your webserver on port 8080 on the same machine.**
+**This piece of *VCL* code assumes that Varnish is installed on port 80 and your webserver on port 8080 on the same machine.**
 
 ## Disclaimer
 
