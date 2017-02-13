@@ -38,6 +38,8 @@ PHP validates this token, but there's even a piece of Javascript code that reads
 
 The fact that we used client-side session storage allows for reverse caching proxies, such as Varnish, to do the validation without having to connect with the backend.
 
+To login, please use the *admin* username and change the password hash [on line 58 of the index.php file](/public/index.php#L58). The hash is created via the PHP [password_hash](https://php.net/password_hash) function using the default Bcrypt algorithm.
+
 ## How to install
 
 The minimum PHP version requirement is `PHP 5.5.9`. All dependencies are loaded via [Composer](https://getcomposer.org), the PHP package manager. Dependency definition happens in the [composer.json](/composer.json) file:
