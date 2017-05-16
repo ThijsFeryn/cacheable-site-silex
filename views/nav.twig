@@ -1,7 +1,7 @@
 <nav class="navbar navbar-default navbar-fixed-side">
     <ul class="nav">
         <li><a href="{{ url('home') }}">Home</a></li>
-        <li><a href="{{ loginLogoutUrl }}">{{ loginLogoutLabel | trans }}</a></li>
+        <li><a href="{{ loginLogoutUrl|default(url('login')) }}">{{ loginLogoutLabel|default('log_in') | trans }}</a></li>
         <li><a href="{{ url('private') }}">Private</a></li>
     </ul>
     <small>{{ 'rendered' | trans({'%date%':"now"|date("Y-m-d H:i:s")}) }}</small>
