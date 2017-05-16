@@ -15,7 +15,8 @@ if (php_sapi_name() == 'cli-server' && preg_match('/\.(?:png|jpg|jpeg|gif|css|js
 }
 
 $app = new Silex\Application();
-$app['jwtKey'] = 'SlowWebSitesSuck';
+$app['jwtKey'] = file_get_contents(dirname(__DIR__).'/vcl/jwt.key');
+$app['jwtOldKey'] = file_get_contents(dirname(__DIR__).'/vcl/jwt.old.key');
 $app['debug'] = true;
 $app['locale'] = 'en';
 $app->register(new Silex\Provider\TwigServiceProvider(), ['twig.path' => __DIR__.'/../views']);
@@ -61,8 +62,10 @@ $app['credentials'] = [
 $app['jwtEncode'] = function() use ($app){
    return function($username) use ($app) {
         return JWT::encode([
-            'sub'=>$username,
-            'login'=>true,
+            'iat'=>time(),
+            //'exp'=>time() + (4 * 24 * 60 * 60),
+            'exp'=>time() + 60,
+            'sub'=>$username
         ],$app['jwtKey']);
     };
 };
@@ -72,12 +75,25 @@ $app['jwtValidate'] = function() use ($app) {
         try {
             $data = JWT::decode($token,$app['jwtKey'],['HS256']);
             $data = (array)$data;
+
             if(!isset($app['credentials'][$data['sub']])) {
                 return false;
             }
             return true;
-        } catch(UnexpectedValueException $e) {
-            return false;
+        } catch(Exception $e) {
+            try {
+                if($e->getMessage() == 'Signature verification failed') {
+                    $data = JWT::decode($token,$app['jwtOldKey'],['HS256']);
+                    $data = (array)$data;
+                    if(!isset($app['credentials'][$data['sub']])) {
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            } catch(Exception $e) {
+                return false;
+            }
         }
     };
 };
@@ -91,6 +107,7 @@ $app->before(function (Request $request) use ($app){
         $response
             ->setPublic()
             ->setSharedMaxAge(500);
+        return $response;
     }
 });
 
