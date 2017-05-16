@@ -14,32 +14,16 @@
 </head>
 <body>
 <div class="container-fluid">
-    {{ render_esi(url('header')) }}
+    {{ include('header.twig') }}
     <div class="row">
         <div class="col-sm-3 col-lg-2">
-            {{ render_esi(url('nav')) }}
+            {{ include('nav.twig') }}
         </div>
         <div class="col-sm-9 col-lg-10">
             {% block content %}{% endblock %}
         </div>
     </div>
-    {{ render_hinclude(url('footer')) }}
+    {{ include('footer.twig') }}
 </div>
-<script language="JavaScript">
-    function getCookie(name) {
-        var value = "; " + document.cookie;
-        var parts = value.split("; " + name + "=");
-        if (parts.length == 2) return parts.pop().split(";").shift();
-    }
-    function parseJwt (token) {
-        var base64Url = token.split('.')[1];
-        var base64 = base64Url.replace('-', '+').replace('_', '/');
-        return JSON.parse(window.atob(base64));
-    };
-    $(document).ready(function(){
-        var token = parseJwt($.cookie("token"));
-        $("#usernameLabel").html(', ' + token.sub);
-    });
-</script>
 </body>
 </html>

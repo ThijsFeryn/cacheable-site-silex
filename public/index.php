@@ -6,23 +6,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
-use Silex\Provider\HttpFragmentServiceProvider;
-use Silex\Provider\HttpCacheServiceProvider;
-use Firebase\JWT\JWT;
 
 if (php_sapi_name() == 'cli-server' && preg_match('/\.(?:png|jpg|jpeg|gif|css|js|ico|ttf|woff|json|html|htm)$/', $_SERVER["REQUEST_URI"])) {
     return false;
 }
 
 $app = new Silex\Application();
-$app['jwtKey'] = file_get_contents(dirname(__DIR__).'/vcl/jwt.key');
-$app['jwtOldKey'] = file_get_contents(dirname(__DIR__).'/vcl/jwt.old.key');
-$app['debug'] = true;
 $app['locale'] = 'en';
+$app['debug'] = true;
 $app->register(new Silex\Provider\TwigServiceProvider(), ['twig.path' => __DIR__.'/../views']);
-$app->register(new HttpFragmentServiceProvider());
-$app->register(new HttpCacheServiceProvider());
 $app->register(new Silex\Provider\TranslationServiceProvider(), ['locale_fallbacks' => ['en','nl']]);
+$app->register(new Silex\Provider\SessionServiceProvider());
 
 $app['translator.domains'] = [
     'messages' => [
@@ -59,124 +53,44 @@ $app['credentials'] = [
     'admin' => '$2y$10$431rvq1qS9ewNFP0Gti/o.kBbuMK4zs8IDTLlxm5uzV7cbv8wKt0K'
 ];
 
-$app['jwtEncode'] = function() use ($app){
-   return function($username) use ($app) {
-        return JWT::encode([
-            'iat'=>time(),
-            //'exp'=>time() + (4 * 24 * 60 * 60),
-            'exp'=>time() + 60,
-            'sub'=>$username
-        ],$app['jwtKey']);
-    };
-};
-
-$app['jwtValidate'] = function() use ($app) {
-  return function($token) use ($app) {
-        try {
-            $data = JWT::decode($token,$app['jwtKey'],['HS256']);
-            $data = (array)$data;
-
-            if(!isset($app['credentials'][$data['sub']])) {
-                return false;
-            }
-            return true;
-        } catch(Exception $e) {
-            try {
-                if($e->getMessage() == 'Signature verification failed') {
-                    $data = JWT::decode($token,$app['jwtOldKey'],['HS256']);
-                    $data = (array)$data;
-                    if(!isset($app['credentials'][$data['sub']])) {
-                        return false;
-                    }
-                    return true;
-                }
-                return false;
-            } catch(Exception $e) {
-                return false;
-            }
-        }
-    };
-};
-
 $app->before(function (Request $request) use ($app){
     $request->setLocale($request->getPreferredLanguage());
     $app['translator']->setLocale($request->getPreferredLanguage());
-    if($request->getRequestUri() == $app['url_generator']->generate('private')
-        && !$app['jwtValidate']($request->cookies->get('token'))) {
+    if($request->getRequestUri() == $app['url_generator']->generate('private')) {
         $response = new RedirectResponse($app['url_generator']->generate('login'));
-        $response
-            ->setPublic()
-            ->setSharedMaxAge(500);
         return $response;
     }
 });
 
 $app->after(function(Request $request, Response $response) use ($app){
-    $response
-        ->setETag(md5($response->getContent()))
-        ->setVary('Accept-Language',false)
-        ->isNotModified($request);
-
     $response->headers->set('Content-Length',strlen($response->getContent()));
 });
 
 $app->get('/', function () use($app) {
-    $response =  new Response($app['twig']->render('index.twig'),200);
-    $response
-        ->setSharedMaxAge(500)
-        ->setPublic();
-    return $response;
-})->bind('home');
-
-$app->get('/header', function () use($app) {
-    $response =  new Response($app['twig']->render('header.twig'),200);
-    $response
-        ->setSharedMaxAge(500)
-        ->setVary('X-Login',false)
-        ->setPublic();
-    return $response;
-})->bind('header');
-
-$app->get('/footer', function () use($app) {
-    $response =  new Response($app['twig']->render('footer.twig'),200);
-    $response
-        ->setSharedMaxAge(500)
-        ->setPublic();
-    return $response;
-})->bind('footer');
-
-$app->get('/nav', function (Request $request) use($app) {
-    if($app['jwtValidate']($request->cookies->get('token'))) {
+    if($app['session']->get('logged_in')) {
         $loginLogoutUrl = $app['url_generator']->generate('logout');
         $loginLogoutLabel = 'log_out';
     } else {
         $loginLogoutUrl = $app['url_generator']->generate('login');
         $loginLogoutLabel = 'log_in';
     }
-    $response =  new Response($app['twig']->render('nav.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
-    $response
-        ->setMaxAge(0)
-        ->setSharedMaxAge(500)
-        ->setVary('X-Login',false)
-        ->setPublic();
+    $response =  new Response($app['twig']->render('index.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
     return $response;
-})->bind('nav');
+})->bind('home');
 
 $app->get('/login', function (Request $request) use($app) {
-    if($app['jwtValidate']($request->cookies->get('token'))) {
+    if($app['session']->get('logged_in')) {
         return new RedirectResponse($app['url_generator']->generate('home'));
     }
-    $response =  new Response($app['twig']->render('login.twig'),200);
-    $response
-        ->setSharedMaxAge(500)
-        ->setVary('X-Login',false)
-        ->setPublic();
+    $loginLogoutUrl = $app['url_generator']->generate('login');
+    $loginLogoutLabel = 'log_in';
+    $response =  new Response($app['twig']->render('login.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
     return $response;
 })->bind('login');
 
 $app->get('/logout', function () use($app) {
     $response = new RedirectResponse($app['url_generator']->generate('login'));
-    $response->headers->clearCookie('token');
+    $app['session']->invalidate();
     return $response;
 })->bind('logout');
 
@@ -188,17 +102,14 @@ $app->post('/login', function (Request $request) use($app) {
         return new RedirectResponse($app['url_generator']->generate('login'));
     }
 
-    $cookie = new Cookie("token",$app['jwtEncode']($username), time() + (3600 * 48), '/', null, false, false);
+    $app['session']->set('logged_in',true);
+    $app['session']->set('username',$username);
     $response = new RedirectResponse($app['url_generator']->generate('home'));
-    $response->headers->setCookie($cookie);
     return $response;
 })->bind('loginpost');
 
 $app->get('/private', function () use($app) {
     $response =  new Response($app['twig']->render('private.twig'),200);
-    $response
-        ->setSharedMaxAge(500)
-        ->setPublic();
     return $response;
 })->bind('private');
 
