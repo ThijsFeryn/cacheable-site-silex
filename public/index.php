@@ -39,7 +39,10 @@ $app->before(function (Request $request) use ($app){
 });
 
 $app->after(function(Request $request, Response $response) use ($app){
-    $response->setVary('Accept-Language',false);
+    $response
+        ->setETag(md5($response->getContent()))
+        ->setVary('Accept-Language',false)
+        ->isNotModified($request);
     $response->headers->set('Content-Length',strlen($response->getContent()));
 });
 
