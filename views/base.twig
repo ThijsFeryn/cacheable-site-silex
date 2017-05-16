@@ -14,16 +14,16 @@
 </head>
 <body>
 <div class="container-fluid">
-    {{ include('header.twig') }}
+    {{ render_esi(url('header')) }}
     <div class="row">
         <div class="col-sm-3 col-lg-2">
-            {{ include('nav.twig') }}
+            {{ render_esi(url('nav')) }}
         </div>
         <div class="col-sm-9 col-lg-10">
             {% block content %}{% endblock %}
         </div>
     </div>
-    {{ include('footer.twig') }}
+    {{ render_hinclude(url('footer')) }}
 </div>
 </body>
 </html>

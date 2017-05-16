@@ -6,6 +6,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
+use Silex\Provider\HttpFragmentServiceProvider;
+use Silex\Provider\HttpCacheServiceProvider;
 
 if (php_sapi_name() == 'cli-server' && preg_match('/\.(?:png|jpg|jpeg|gif|css|js|ico|ttf|woff|json|html|htm)$/', $_SERVER["REQUEST_URI"])) {
     return false;
@@ -17,6 +19,8 @@ $app['debug'] = true;
 $app->register(new Silex\Provider\TwigServiceProvider(), ['twig.path' => __DIR__.'/../views']);
 $app->register(new Silex\Provider\TranslationServiceProvider(), ['locale_fallbacks' => ['en','nl']]);
 $app->register(new Silex\Provider\SessionServiceProvider());
+$app->register(new HttpFragmentServiceProvider());
+$app->register(new HttpCacheServiceProvider());
 
 $app->extend('translator', function($translator, $app) {
     $translator->addLoader('yaml', new YamlFileLoader());
@@ -39,24 +43,55 @@ $app->after(function(Request $request, Response $response) use ($app){
 });
 
 $app->get('/', function () use($app) {
-    if($app['session']->get('logged_in')) {
+    $response =  new Response($app['twig']->render('index.twig'),200);
+    $response
+        ->setSharedMaxAge(500)
+        ->setPublic();
+    return $response;
+})->bind('home');
+
+$app->get('/header', function () use($app) {
+    $response =  new Response($app['twig']->render('header.twig'),200);
+    $response
+        ->setSharedMaxAge(500)
+        ->setPublic();
+    return $response;
+})->bind('header');
+$app->get('/footer', function () use($app) {
+    $response =  new Response($app['twig']->render('footer.twig'),200);
+    $response
+        ->setSharedMaxAge(500)
+        ->setPublic();
+    return $response;
+})->bind('footer');
+$app->get('/nav', function (Request $request) use($app) {
+    if($app['session']->has('username')) {
         $loginLogoutUrl = $app['url_generator']->generate('logout');
         $loginLogoutLabel = 'log_out';
     } else {
         $loginLogoutUrl = $app['url_generator']->generate('login');
         $loginLogoutLabel = 'log_in';
     }
-    $response =  new Response($app['twig']->render('index.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
+    $response =  new Response($app['twig']->render('nav.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
+    $response->headers->addCacheControlDirective('no-store', true);
+    $response->headers->addCacheControlDirective('no-cache', true);
+    $response
+        ->setSharedMaxAge(0)
+        ->setPrivate();
     return $response;
-})->bind('home');
+})->bind('nav');
+
 
 $app->get('/login', function (Request $request) use($app) {
-    if($app['session']->get('logged_in')) {
+    if($app['session']->has('username')) {
         return new RedirectResponse($app['url_generator']->generate('home'));
     }
     $loginLogoutUrl = $app['url_generator']->generate('login');
     $loginLogoutLabel = 'log_in';
     $response =  new Response($app['twig']->render('login.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
+    $response
+        ->setSharedMaxAge(500)
+        ->setPublic();
     return $response;
 })->bind('login');
 
@@ -74,14 +109,21 @@ $app->post('/login', function (Request $request) use($app) {
         return new RedirectResponse($app['url_generator']->generate('login'));
     }
 
-    $app['session']->set('logged_in',true);
     $app['session']->set('username',$username);
     $response = new RedirectResponse($app['url_generator']->generate('home'));
     return $response;
 })->bind('loginpost');
 
 $app->get('/private', function () use($app) {
+    if(!$app['session']->has('username')) {
+        return new RedirectResponse($app['url_generator']->generate('login'));
+    }
     $response =  new Response($app['twig']->render('private.twig'),200);
+    $response->headers->addCacheControlDirective('no-store', true);
+    $response->headers->addCacheControlDirective('no-cache', true);
+    $response
+        ->setSharedMaxAge(0)
+        ->setPrivate();
     return $response;
 })->bind('private');
 

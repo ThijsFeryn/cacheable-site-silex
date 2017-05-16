@@ -1,9 +1,6 @@
 vcl 4.0;
 
-import digest;
 import std;
-import cookie;
-import var;
 
 backend default {
     .host = "localhost";
@@ -11,8 +8,6 @@ backend default {
 }
 
 sub vcl_recv {
-    var.set("key","SlowWebSitesSuck");
-
     set req.url = std.querysort(req.url);
 
     if(req.http.accept-language ~ "^\s*(nl)") {
@@ -26,67 +21,14 @@ sub vcl_recv {
     if ((req.method != "GET" && req.method != "HEAD") || req.http.Authorization) {
         return (pass);
     }
-    call jwt;
+
     return(hash);
 }
 
 sub vcl_backend_response {
-    set beresp.http.x-host = bereq.http.host;
-    set beresp.http.x-url = bereq.url;
     if(beresp.http.Surrogate-Control~"ESI/1.0") {
         unset beresp.http.Surrogate-Control;
         set beresp.do_esi=true;
         return(deliver);
-    }
-}
-
-sub vcl_deliver {
-    unset resp.http.x-host;
-    unset resp.http.x-url;
-    set resp.http.vary = "Accept-Encoding";
-}
-
-sub vcl_synth {
-    if (resp.status == 301 || resp.status == 302) {
-        set resp.http.location = resp.reason;
-        set resp.reason = "Moved";
-        return (deliver);
-    }
-}
-
-sub jwt {
-    if(req.url == "/private" && req.http.cookie ~ "^([^;]+;[ ]*)*token=[^\.]+\.[^\.]+\.[^\.]+([ ]*;[^;]+)*$") {
-        cookie.parse(req.http.cookie);
-        cookie.filter_except("token");
-        var.set("token", cookie.get("token"));
-        var.set("header", regsub(var.get("token"),"([^\.]+)\.[^\.]+\.[^\.]+","\1"));
-        var.set("type", regsub(digest.base64url_decode(var.get("header")),{"^.*?"typ"\s*:\s*"(\w+)".*?$"},"\1"));
-        var.set("algorithm", regsub(digest.base64url_decode(var.get("header")),{"^.*?"alg"\s*:\s*"(\w+)".*?$"},"\1"));
-
-        if(var.get("type") != "JWT" || var.get("algorithm") != "HS256") {
-            return(synth(302,"/login"));
-        }
-
-        var.set("rawPayload",regsub(var.get("token"),"[^\.]+\.([^\.]+)\.[^\.]+$","\1"));
-        var.set("signature",regsub(var.get("token"),"^[^\.]+\.[^\.]+\.([^\.]+)$","\1"));
-        var.set("currentSignature",digest.base64url_nopad_hex(digest.hmac_sha256(var.get("key"),var.get("header") + "." + var.get("rawPayload"))));
-        var.set("payload", digest.base64url_decode(var.get("rawPayload")));
-        var.set("iat",regsub(var.get("payload"),{"^.*?"iat"\s*:\s*(\w+).*?$"},"\1"));
-        var.set("exp",regsub(var.get("payload"),{"^.*?"exp"\s*:\s*(\w+).*?$"},"\1"));
-        var.set("username",regsub(var.get("payload"),{"^.*?"sub"\s*:\s*"(\w+)".*?$"},"\1"));
-
-        if(std.time(var.get("exp"),now) < now) {
-            return(synth(302,"/login"));
-        }
-
-        if(var.get("signature") != var.get("currentSignature")) {
-            return(synth(302,"/login"));
-        }
-
-        if(var.get("username") ~ "^\w+$") {
-            set req.http.X-Login="true";
-        } else {
-           return(synth(302,"/login"));
-        }
     }
 }
