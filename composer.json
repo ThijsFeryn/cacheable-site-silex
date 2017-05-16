@@ -4,6 +4,7 @@
         "twig/twig": "^1.27",
         "symfony/twig-bridge": "^3.1",
         "symfony/config": "^3.2",
-        "symfony/yaml": "^3.2"
+        "symfony/yaml": "^3.2",
+        "firebase/php-jwt": "^4.0"
     }
 }
