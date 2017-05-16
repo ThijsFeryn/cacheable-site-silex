@@ -39,6 +39,7 @@ $app->before(function (Request $request) use ($app){
 });
 
 $app->after(function(Request $request, Response $response) use ($app){
+    $response->setVary('Accept-Language',false);
     $response->headers->set('Content-Length',strlen($response->getContent()));
 });
 
