@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 use Silex\Provider\HttpFragmentServiceProvider;
 use Silex\Provider\HttpCacheServiceProvider;
-use Symfony\Component\Routing\Loader\YamlFileLoader;
 use Symfony\Component\Translation\Translator;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Firebase\JWT\JWT;
 
 if (php_sapi_name() == 'cli-server' && preg_match('/\.(?:png|jpg|jpeg|gif|css|js|ico|ttf|woff|json|html|htm)$/', $_SERVER["REQUEST_URI"])) {
@@ -21,7 +21,6 @@ $app['locale'] = 'en';
 $app['debug'] = true;
 $app['jwtKey'] = 'SlowWebSitesSuck';
 $app->register(new Silex\Provider\TwigServiceProvider(), ['twig.path' => __DIR__.'/../views']);
-$app->register(new Silex\Provider\LocaleServiceProvider());
 $app->register(new Silex\Provider\TranslationServiceProvider(), ['locale_fallbacks' => ['en','nl']]);
 $app->register(new Silex\Provider\SessionServiceProvider());
 $app->register(new HttpFragmentServiceProvider());
@@ -30,7 +29,7 @@ $app->register(new HttpCacheServiceProvider());
 $app->extend('translator', function(Translator $translator, $app) {
     $translator->addLoader('yaml', new YamlFileLoader());
     $translator->addResource('yaml', dirname(__DIR__).'/locales/en.yml', 'en');
-    $translator->addResource('yaml',dirname( __DIR__).'/locales/nl.yml', 'nl');
+    $translator->addResource('yaml',dirname(__DIR__).'/locales/nl.yml', 'nl');
     return $translator;
 });
 
@@ -114,10 +113,7 @@ $app->get('/nav', function (Request $request) use($app) {
         $loginLogoutLabel = 'log_in';
     }
     $response =  new Response($app['twig']->render('nav.twig',['loginLogoutUrl'=>$loginLogoutUrl,'loginLogoutLabel'=>$loginLogoutLabel]),200);
-    $response->headers->addCacheControlDirective('no-store', true);
-    $response->headers->addCacheControlDirective('no-cache', true);
     $response
-        ->setSharedMaxAge(0)
         ->setVary('X-Login',false)
         ->setSharedMaxAge(500)
         ->setPublic();
@@ -159,8 +155,8 @@ $app->post('/login', function (Request $request) use($app) {
     return $response;
 })->bind('loginpost');
 
-$app->get('/private', function () use($app) {
-    if(!$app['session']->has('username')) {
+$app->get('/private', function (Request $request) use($app) {
+    if(!$app['jwtValidate']($request->cookies->get('token'))) {
         return new RedirectResponse($app['url_generator']->generate('login'));
     }
     $response =  new Response($app['twig']->render('private.twig'),200);
