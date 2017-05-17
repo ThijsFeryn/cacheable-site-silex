@@ -5,10 +5,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Cookie;
 use Silex\Provider\HttpFragmentServiceProvider;
 use Silex\Provider\HttpCacheServiceProvider;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
+use Symfony\Component\Translation\Translator;
 use Firebase\JWT\JWT;
 
 if (php_sapi_name() == 'cli-server' && preg_match('/\.(?:png|jpg|jpeg|gif|css|js|ico|ttf|woff|json|html|htm)$/', $_SERVER["REQUEST_URI"])) {
@@ -20,12 +21,13 @@ $app['locale'] = 'en';
 $app['debug'] = true;
 $app['jwtKey'] = 'SlowWebSitesSuck';
 $app->register(new Silex\Provider\TwigServiceProvider(), ['twig.path' => __DIR__.'/../views']);
+$app->register(new Silex\Provider\LocaleServiceProvider());
 $app->register(new Silex\Provider\TranslationServiceProvider(), ['locale_fallbacks' => ['en','nl']]);
 $app->register(new Silex\Provider\SessionServiceProvider());
 $app->register(new HttpFragmentServiceProvider());
 $app->register(new HttpCacheServiceProvider());
 
-$app->extend('translator', function($translator, $app) {
+$app->extend('translator', function(Translator $translator, $app) {
     $translator->addLoader('yaml', new YamlFileLoader());
     $translator->addResource('yaml', dirname(__DIR__).'/locales/en.yml', 'en');
     $translator->addResource('yaml',dirname( __DIR__).'/locales/nl.yml', 'nl');
