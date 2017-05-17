@@ -24,7 +24,7 @@ sub vcl_recv {
     }
     call jwt;
     if(req.url == "/private" && req.http.X-Login != "true") {
-        return(synth(302,"/login"));
+        return(synth(302,"/logout"));
     }
     return(hash);
 }
@@ -79,12 +79,15 @@ sub jwt {
             return(synth(400, "Invalid token"));
         }
 
-        std.log("payload: "+var.get("payload"));
-
-        //&& std.time(var.get("exp"),now) >= now
         if(var.get("username") ~ "^\w+$") {
-            std.log("Username: " + var.get("username") + ", not expired");
-            set req.http.X-Login="true";
+            std.log("Username: " + var.get("username"));
+            if(std.time(var.get("exp"),now) >= now) {
+                std.log("JWT not expired");
+                set req.http.X-Login="true";
+            } else {
+            set req.http.X-Login="false";
+                std.log("JWT expired");
+            }
         }
     }
 }

@@ -41,6 +41,8 @@ $app['jwtEncode'] = function() use ($app){
     return function($username) use ($app) {
         return JWT::encode([
             'sub'=>$username,
+            //'exp'=>time() + (4 * 24 * 60 * 60),
+            'exp'=>time() + 60,
             'login'=>true,
         ],$app['jwtKey']);
     };
