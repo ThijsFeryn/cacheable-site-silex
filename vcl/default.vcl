@@ -71,7 +71,6 @@ sub jwt {
         var.set("signature",regsub(var.get("token"),"^[^\.]+\.[^\.]+\.([^\.]+)$","\1"));
         var.set("currentSignature",digest.base64url_nopad_hex(digest.hmac_sha256(var.get("key"),var.get("header") + "." + var.get("rawPayload"))));
         var.set("payload", digest.base64url_decode(var.get("rawPayload")));
-        var.set("iat",regsub(var.get("payload"),{"^.*?"iat"\s*:\s*(\w+).*?$"},"\1"));
         var.set("exp",regsub(var.get("payload"),{"^.*?"exp"\s*:\s*(\w+).*?$"},"\1"));
         var.set("username",regsub(var.get("payload"),{"^.*?"sub"\s*:\s*"(\w+)".*?$"},"\1"));
 

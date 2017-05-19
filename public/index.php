@@ -41,8 +41,8 @@ $app['jwtEncode'] = function() use ($app){
     return function($username) use ($app) {
         return JWT::encode([
             'sub'=>$username,
-            //'exp'=>time() + (4 * 24 * 60 * 60),
-            'exp'=>time() + 60,
+            'exp'=>time() + (4 * 24 * 60 * 60),
+            //'exp'=>time() + 60,
             'login'=>true,
         ],$app['jwtKey']);
     };
@@ -66,13 +66,6 @@ $app['jwtValidate'] = function() use ($app) {
 $app->before(function (Request $request) use ($app){
     $request->setLocale($request->getPreferredLanguage());
     $app['translator']->setLocale($request->getPreferredLanguage());
-    if($request->getRequestUri() == $app['url_generator']->generate('private')
-        && !$app['jwtValidate']($request->cookies->get('token'))) {
-        $response = new RedirectResponse($app['url_generator']->generate('login'));
-        $response
-            ->setPublic()
-            ->setSharedMaxAge(500);
-    }
 });
 
 $app->after(function(Request $request, Response $response) use ($app){
