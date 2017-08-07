@@ -8,7 +8,15 @@ import var;
 backend default {
     .host = "localhost";
     .port = "8080";
+    .probe = {
+         .url = "/";
+         .interval = 5s;
+         .timeout = 5s;
+         .window = 5;
+         .threshold = 3;
+     }
 }
+
 
 sub vcl_recv {
     var.set("key","SlowWebSitesSuck");
@@ -35,7 +43,6 @@ sub vcl_backend_response {
     if(beresp.http.Surrogate-Control~"ESI/1.0") {
         unset beresp.http.Surrogate-Control;
         set beresp.do_esi=true;
-        return(deliver);
     }
 }
 
@@ -54,6 +61,7 @@ sub vcl_synth {
 }
 
 sub jwt {
+    unset req.http.X-Login;
     if(req.http.cookie ~ "^([^;]+;[ ]*)*token=[^\.]+\.[^\.]+\.[^\.]+([ ]*;[^;]+)*$") {
         std.log("Token cookie found");
         cookie.parse(req.http.cookie);
