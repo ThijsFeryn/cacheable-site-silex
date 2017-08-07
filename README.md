@@ -136,6 +136,7 @@ sub vcl_synth {
 }
 
 sub jwt {
+    unset req.http.X-Login;
     if(req.http.cookie ~ "^([^;]+;[ ]*)*token=[^\.]+\.[^\.]+\.[^\.]+([ ]*;[^;]+)*$") {
         set req.http.x-token = ";" + req.http.Cookie;
         set req.http.x-token = regsuball(req.http.x-token, "; +", ";");
