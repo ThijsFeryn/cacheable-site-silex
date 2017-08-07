@@ -194,7 +194,6 @@ This *vcl* file doesn't just take care of caching, but also validates the *JWT* 
 * It validates the *token cookie*
 * In case of a mismatch, an *403 error* is returned
 * The login state is extracted from the encoded JSON and stored in the custom `X-Login` request header
-* The username is extracted from the encoded JSON and stored in the custom `X-Username` request header
 * The PHP code performs *cache variations* on the `X-Login` request header to have 2 versions of the pages that depend on the login state 
 
 ## Summary
